@@ -1,15 +1,13 @@
-﻿namespace AsconTestTask.Backend.Data.Members;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
+namespace AsconTestTask.Backend.Data.Members;
+
+[Keyless]
 public class DataAttribute
 {
-	public DataAttribute(int id, string name, string value)
-	{
-		Id = id;
-		Name = name;
-		Value = value;
-	}
-
-	public int Id { get; }
+	[Column("Id")]
+	public DataObject Obj { get; }
 	public string Name { get; }
 	public string Value { get; }
 }
