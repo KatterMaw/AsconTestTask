@@ -5,7 +5,7 @@ namespace AsconTestTask.Backend.Data.Members;
 [Keyless]
 public class DataLink
 {
-	public DataMember Parent { get; }
-	public DataMember Child { get; }
+	public DataObject Parent { get; }
+	public DataObject Child { get; }
 	public string LinkName { get; }
 }
