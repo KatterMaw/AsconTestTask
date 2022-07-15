@@ -24,12 +24,14 @@ public class TreeNode : ReactiveObject
 	{
 		Source = source;
 		SubNodes = new ObservableCollection<TreeNode>(subNodes);
+		foreach (TreeNode treeNode in SubNodes) treeNode.ParentNode = this;
 		SubNodes.CollectionChanged += SubNodesOnCollectionChanged;
 	}
 
 	public string Name => Source.Product;
 	public DataObject Source { get; }
 	public ObservableCollection<TreeNode> SubNodes { get; }
+	public TreeNode? ParentNode { get; set; }
 	
 	
 	private void SubNodesOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
