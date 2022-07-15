@@ -13,4 +13,8 @@
       <PackageReference Include="ReactiveUI.WPF" Version="18.2.9" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\AsconTestTask.Backend\AsconTestTask.Backend.csproj" />
+    </ItemGroup>
+
 </Project>
