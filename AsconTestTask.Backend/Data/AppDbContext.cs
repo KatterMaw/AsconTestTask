@@ -5,9 +5,9 @@ namespace AsconTestTask.Backend.Data;
 
 public sealed class AppDbContext : DbContext
 {
-	public DbSet<DataAttribute> Attributes { get; } = null!;
-	public DbSet<DataLink> Links { get; } = null!;
-	public DbSet<DataObject> Objects { get; } = null!;
+	public DbSet<DataAttribute> Attributes { get; set; } = null!;
+	public DbSet<DataLink> Links { get; set; } = null!;
+	public DbSet<DataObject> Objects { get; set; } = null!;
 
 	public AppDbContext()
 	{
@@ -22,5 +22,18 @@ public sealed class AppDbContext : DbContext
 		{
 			optionsBuilder.UseSqlServer(connectionStringProvider.GetConnectionString());
 		}
+	}
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{
+		modelBuilder.Entity<DataLink>().HasKey(link => new {link.ParentId, link.ChildId});
+		modelBuilder.Entity<DataObject>().HasMany(obj => obj.LinksAsChild).WithOne(link => link.Child)
+			.OnDelete(DeleteBehavior.NoAction);
+		modelBuilder.Entity<DataObject>().HasMany(obj => obj.LinksAsParent).WithOne(link => link.Parent)
+			.OnDelete(DeleteBehavior.NoAction);
+		modelBuilder.Entity<DataLink>().HasOne(link => link.Child).WithMany(obj => obj.LinksAsChild)
+			.OnDelete(DeleteBehavior.NoAction);
+		modelBuilder.Entity<DataLink>().HasOne(link => link.Parent).WithMany(obj => obj.LinksAsParent)
+			.OnDelete(DeleteBehavior.NoAction);
 	}
 }

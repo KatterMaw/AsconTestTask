@@ -3,11 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AsconTestTask.Backend.Data.Members;
 
-[Keyless]
 public class DataAttribute
 {
-	[Column("Id")]
-	public DataObject Obj { get; }
-	public string Name { get; }
-	public string Value { get; }
+	public int Id { get; set; }
+	public DataObject Obj { get; set; }
+	public string Name { get; set; }
+	public string Value { get; set; }
 }

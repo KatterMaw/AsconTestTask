@@ -12,7 +12,12 @@ public class TreeNode : ReactiveObject
 {
 	public static TreeNode FromDataObject(DataObject obj)
 	{
-		return new TreeNode(obj, obj.Links.Select(link => FromDataObject(link.Child)));
+		return new TreeNode(obj, null, obj.LinksAsChild.Select(FromDataLink));
+	}
+
+	private static TreeNode FromDataLink(DataLink link)
+	{
+		return new TreeNode(link.Child, link, link.Child.LinksAsChild.Select(FromDataLink));
 	}
 
 	public static async Task<TreeNode> FromDataObjectAsync(DataObject obj)
@@ -20,20 +25,22 @@ public class TreeNode : ReactiveObject
 		return await Task.Run(() => FromDataObject(obj));
 	}
 
-	private TreeNode(DataObject source, IEnumerable<TreeNode> subNodes)
+	private TreeNode(DataObject source, DataLink? link, IEnumerable<TreeNode> subNodes)
 	{
 		Source = source;
+		Link = link;
 		SubNodes = new ObservableCollection<TreeNode>(subNodes);
 		foreach (TreeNode treeNode in SubNodes) treeNode.ParentNode = this;
 		SubNodes.CollectionChanged += SubNodesOnCollectionChanged;
 	}
 
-	public string Name => Source.Product;
+	public string Name => Link == null ? Source.Product : $"{Link.LinkName}\n{Source.Product}";
 	public DataObject Source { get; }
 	public ObservableCollection<TreeNode> SubNodes { get; }
-	public TreeNode? ParentNode { get; set; }
-	
-	
+	public TreeNode? ParentNode { get; private set; }
+	public DataLink? Link { get; }
+
+
 	private void SubNodesOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
 		this.RaisePropertyChanged(nameof(SubNodes));
