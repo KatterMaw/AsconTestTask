@@ -4,6 +4,6 @@ public class EmbeddedConstConnectionStringProvider : IConnectionStringProvider
 {
 	public string GetConnectionString()
 	{
-		return "Server=(localdb)\\mssqllocaldb;Database=asconApp;Trusted_Connection=True;";
+		return "Server=(localdb)\\mssqllocaldb;Database=asconTTAppDb;Trusted_Connection=True;";
 	}
 }
