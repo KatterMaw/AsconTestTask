@@ -17,8 +17,6 @@ public sealed class AppDbContext : DbContext
 	public AppDbContext(string? connectionString = null)
 	{
 		_connectionString = connectionString ?? GetConnectionStringFromConfig();
-		//Database.EnsureDeleted();
-		Database.EnsureCreated();
 	}
 	
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
