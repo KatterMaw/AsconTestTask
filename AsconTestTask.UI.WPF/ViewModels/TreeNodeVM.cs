@@ -34,12 +34,6 @@ public class TreeNodeVM : ReactiveObject
 		SubNodes.CollectionChanged += SubNodesOnCollectionChanged;
 	}
 
-	public void AddSubNode(TreeNodeVM node)
-	{
-		node.ParentNode = this;
-		SubNodes.Add(node);
-	}
-
 	public string? LinkName => Link?.LinkName;
 	public bool LinkIsVisible => Link != null;
 	public string ProductName => Source.Product;
@@ -57,6 +51,22 @@ public class TreeNodeVM : ReactiveObject
 
 	private void SubNodesOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 	{
+		if (e.Action == NotifyCollectionChangedAction.Add)
+		{
+			foreach (var newItem in e.NewItems!)
+			{
+				var newTreeNode = (TreeNodeVM) newItem;
+				newTreeNode.ParentNode = this;
+			}
+		}
+		else if (e.Action == NotifyCollectionChangedAction.Reset)
+		{
+			foreach (TreeNodeVM node in SubNodes)
+			{
+				node.ParentNode = this;
+			}
+		}
+		
 		this.RaisePropertyChanged(nameof(SubNodes));
 	}
 
