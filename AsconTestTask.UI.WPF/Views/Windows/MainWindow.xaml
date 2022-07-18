@@ -6,8 +6,12 @@
         xmlns:local="clr-namespace:AsconTestTask.UI.WPF"
         xmlns:viewModels="clr-namespace:AsconTestTask.UI.WPF.ViewModels.Windows"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:reactiveUi="clr-namespace:ReactiveUI;assembly=ReactiveUI"
+        xmlns:utilities="clr-namespace:AsconTestTask.UI.WPF.Utilities"
+        xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" MinHeight="500" MinWidth="1000">
     <Window.DataContext>
         <viewModels:MainWindowVM/>
     </Window.DataContext>
@@ -24,17 +28,22 @@
                     <RowDefinition/>
                 </Grid.RowDefinitions>
                 <StackPanel Grid.Row="0" Orientation="Horizontal">
-                    <Button Content="Добавить" Margin="10" Width="100" Command="{Binding AddNewObjectCommand}"/>
-                    <Button Content="Удалить" Margin="10" Width="100"/>
+                    <Button Content="Новый объект" Margin="10" Width="130" Command="{Binding AddNewObjectCommand}"/>
+                    <Button Content="Добавить связь" Margin="10" Width="130" Padding="0" Command="{Binding ShowAddNewLinkOverlayCommand}"/>
+                    <Button Content="Удалить" Margin="10" Width="100" Command="{Binding DeleteSelectedObjectCommand}"/>
                     <Button Content="Экспорт" Margin="10" Width="100"/>
                 </StackPanel>
                 
-                <TreeView Grid.Row="1" Margin="10" ItemsSource="{Binding Nodes, UpdateSourceTrigger=PropertyChanged}">
+                <TreeView Grid.Row="1" Margin="10" ItemsSource="{Binding Nodes, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding HasUnsavedChanges, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource InvertBooleanConverter}}">
+                    <b:Interaction.Behaviors>
+                        <utilities:BindableSelectedItemBehavior SelectedItem="{Binding SelectedNode, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                    </b:Interaction.Behaviors>
                     <TreeView.ItemTemplate>
-                        <HierarchicalDataTemplate>
-                            <Grid>
-                                <TextBlock Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
-                            </Grid>
+                        <HierarchicalDataTemplate ItemsSource="{Binding SubNodes}">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{Binding LinkName, UpdateSourceTrigger=PropertyChanged}" FontWeight="Light" Visibility="{Binding LinkIsVisible, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                <TextBlock Text="{Binding ProductName, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
                         </HierarchicalDataTemplate>
                     </TreeView.ItemTemplate>
                 </TreeView>
@@ -53,11 +62,30 @@
                         <RowDefinition/>
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0" Orientation="Horizontal">
-                        <Button Content="Добавить" Margin="10" Width="100"/>
-                        <Button Content="Удалить" Margin="10" Width="100"/>
+                        <Button Content="Добавить" Margin="10" Width="100" Command="{Binding AddNewAttributeCommand}"/>
+                        <Button Content="Удалить" Margin="10" Width="100" Command="{Binding DeleteAttributeCommand}"/>
                     </StackPanel>
                 
-                    <ListView Grid.Row="1" Margin="10"/>
+                    <ListView Grid.Row="1" Margin="10" ItemsSource="{Binding CurrentAttributes, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedAttribute, UpdateSourceTrigger=PropertyChanged}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Название">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding AttributeName, UpdateSourceTrigger=PropertyChanged}" MinWidth="100"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Значение">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding AttributeValue, UpdateSourceTrigger=PropertyChanged}" MinWidth="100"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
                 </Grid>
             </GroupBox>
             <GroupBox Grid.Row="1" Header="Параметры">
@@ -66,24 +94,45 @@
                         <ColumnDefinition/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <GroupBox Grid.Column="0" Header="Объект" BorderThickness="0.5">
+                    <GroupBox Grid.Column="0" Grid.Row="0" Header="Объект" BorderThickness="0.5">
                         <StackPanel>
-                            <TextBox materialDesign:HintAssist.Hint="Тип" materialDesign:HintAssist.IsFloating="True" Style="{StaticResource MaterialDesignOutlinedTextBox}" Padding="7" materialDesign:HintAssist.Background="White" Cursor="IBeam"/>
-                            <TextBox materialDesign:HintAssist.Hint="Продукт" materialDesign:HintAssist.IsFloating="True" Style="{StaticResource MaterialDesignOutlinedTextBox}" Margin="0 10 0 0" Padding="7" materialDesign:HintAssist.Background="White" Cursor="IBeam"/>
+                            <TextBox materialDesign:HintAssist.Hint="Тип" materialDesign:HintAssist.IsFloating="True" Style="{StaticResource MaterialDesignOutlinedTextBox}" Padding="7" materialDesign:HintAssist.Background="White" Cursor="IBeam" IsEnabled="{Binding AnyNodeSelected, UpdateSourceTrigger=PropertyChanged}" Text="{Binding ObjectType, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBox materialDesign:HintAssist.Hint="Продукт" materialDesign:HintAssist.IsFloating="True" Style="{StaticResource MaterialDesignOutlinedTextBox}" Margin="0 10 0 0" Padding="7" materialDesign:HintAssist.Background="White" Cursor="IBeam" IsEnabled="{Binding AnyNodeSelected, UpdateSourceTrigger=PropertyChanged}" Text="{Binding ObjectProduct, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
                     </GroupBox>
-                    <GroupBox Grid.Column="1" Header="Связь" BorderThickness="0.5">
+                    <GroupBox Grid.Column="1" Grid.Row="0" Header="Связь с родителем" BorderThickness="0.5">
                         <StackPanel>
-                            <TextBox materialDesign:HintAssist.Hint="Название" materialDesign:HintAssist.IsFloating="True" Style="{StaticResource MaterialDesignOutlinedTextBox}" Padding="7" materialDesign:HintAssist.Background="White" Cursor="IBeam"/>
+                            <TextBox materialDesign:HintAssist.Hint="Название" materialDesign:HintAssist.IsFloating="True" Style="{StaticResource MaterialDesignOutlinedTextBox}" Padding="7" materialDesign:HintAssist.Background="White" Cursor="IBeam" IsEnabled="{Binding SelectedObjectHasLink, UpdateSourceTrigger=PropertyChanged}" Text="{Binding LinkName, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
                     </GroupBox>
                 </Grid>
             </GroupBox>
         </Grid>
         
-        
-        
-        
+        <Border Name="OverlayHost" Grid.ColumnSpan="2" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="{StaticResource AttentionToActionBrush}" Visibility="{Binding AddLinkOverlayShouldBeVisible, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Border Name="AddLinkOverlay" Background="White" CornerRadius="5" BorderBrush="LightGray" BorderThickness="1" Width="400" Height="300">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Margin="10" FontSize="18" Text="{Binding Path=ObjectProduct, StringFormat='Добавление связи для продукта &quot;{0}&quot;', UpdateSourceTrigger=PropertyChanged}"/>
+                    <ListView Grid.Row="1" ItemsSource="{Binding AvailableDataObjects, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedObjectToLink, UpdateSourceTrigger=PropertyChanged}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Продукт" DisplayMemberBinding="{Binding Product, UpdateSourceTrigger=PropertyChanged}"/>
+                                <GridViewColumn Header="Тип" DisplayMemberBinding="{Binding Type, UpdateSourceTrigger=PropertyChanged}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Margin="10" Width="100" Content="Отмена" Padding="0" Command="{Binding CancelAddingNewLinkCommand}"/>
+                        <Button Margin="10" Width="100" Content="Применить" Padding="0" Command="{Binding AddNewLinkOverlayCommand}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Border>
         
     </Grid>
 </Window>

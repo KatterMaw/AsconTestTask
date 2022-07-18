@@ -1,12 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AsconTestTask.Backend.Data.Members;
 
 public class DataLink
 {
-	public int ParentId { get; set; }
-	public DataObject Parent { get; set; }
-	public int ChildId { get; set; }
-	public DataObject Child { get; set; }
-	public string LinkName { get; set; }
+	
+	[Key] [Column("id")] public int Id { get; set; }
+	[Column("idparent")] public DataObject? Parent { get; set; }
+	[Column("idchild")] public DataObject? Child { get; set; }
+	[Column("linkname")] public string LinkName { get; set; }
 }
