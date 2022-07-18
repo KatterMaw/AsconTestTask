@@ -32,10 +32,8 @@ public sealed class AppDbContext : DbContext
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
-		modelBuilder.Entity<DataObject>().HasMany(obj => obj.LinksAsChild).WithOne(link => link.Child)
-			.OnDelete(DeleteBehavior.NoAction);
-		modelBuilder.Entity<DataObject>().HasMany(obj => obj.LinksAsParent).WithOne(link => link.Parent)
-			.OnDelete(DeleteBehavior.NoAction);
+		modelBuilder.ApplyConfiguration(new DataObjectConfiguration());
+		modelBuilder.ApplyConfiguration(new DataLinkConfiguration());
 	}
 
 	private string GetConnectionStringFromConfig()
