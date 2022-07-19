@@ -120,9 +120,7 @@ public class MainWindowVM : ReactiveObject
 	{
 		using var appDbContext = new AppDbContext();
 		DataObject selectedObject = SelectedNode!.Source;
-		var newLink = new DataLink {LinkName = "Новая связь"/*, Parent = selectedObject, Child = SelectedObjectToLink*/};
-		selectedObject.LinksAsParent.Add(newLink);
-		SelectedObjectToLink.LinksAsChild.Add(newLink);
+		var newLink = new DataLink {LinkName = "Новая связь", Parent = selectedObject, Child = SelectedObjectToLink};
 		appDbContext.Links.Add(newLink);
 		appDbContext.SaveChanges();
 		
@@ -143,15 +141,13 @@ public class MainWindowVM : ReactiveObject
 	private ReactiveCommand<Unit, Unit>? _deleteSelectedObjectCommand;
 	public ReactiveCommand<Unit, Unit> DeleteSelectedObjectCommand => _deleteSelectedObjectCommand ??= ReactiveCommand.Create(() =>
 	{
-		using var dbContext = new AppDbContext();
 		if (SelectedNode == null) return;
-		var nodeToDelete = SelectedNode;
-		dbContext.Attach(nodeToDelete.Source);
-		bool isRootNode = nodeToDelete.ParentNode == null;
+		using var dbContext = new AppDbContext();
+		TreeNodeVM? nodeToDelete = SelectedNode;
+		var isRootNode = nodeToDelete.ParentNode == null;
 		if (isRootNode)
 		{
 			Nodes.Remove(nodeToDelete);
-			dbContext.SaveChanges();
 			dbContext.Objects.Remove(nodeToDelete.Source);
 		}
 		else
@@ -159,7 +155,6 @@ public class MainWindowVM : ReactiveObject
 			SelectedNode.ParentNode!.SubNodes.Remove(nodeToDelete);
 			dbContext.Links.Remove(nodeToDelete.Link!);
 		}
-		dbContext.RemoveRange(dbContext.Links.Where(link => link.Child == null || link.Parent == null));
 		dbContext.SaveChanges();
 	});
 	
