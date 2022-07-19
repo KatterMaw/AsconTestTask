@@ -7,6 +7,8 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Windows.Forms;
+using System.Xml;
+using System.Xml.Serialization;
 using AsconTestTask.Backend.Data;
 using AsconTestTask.Backend.Data.Members;
 using Microsoft.EntityFrameworkCore;
@@ -101,11 +103,11 @@ public class MainWindowVM : ReactiveObject
 
 	public IEnumerable<DataObject>? AvailableDataObjects => SelectedNode == null ?
 		null :
-		Nodes.Select(node => node.Source).Where(obj => !SelectedNode!.ThisOrAnyParentContainsDataObject(obj));
+		Nodes.Select(node => node.Source).Where(obj => !SelectedNode!.ThisOrAnyParentContainsDataObject(obj) && SelectedNode.SubNodes.All(node => node.Source != obj));
 
 	[Reactive] public bool AddLinkOverlayShouldBeVisible { get; set; }
 	
-	[Reactive] public DataObject SelectedObjectToLink { get; set; }
+	[Reactive] public DataObject? SelectedObjectToLink { get; set; }
 
 	private ReactiveCommand<Unit, Unit>? _openAddNewLinkOverlayCommand;
 	public ReactiveCommand<Unit, Unit> ShowAddNewLinkOverlayCommand => _openAddNewLinkOverlayCommand ??= ReactiveCommand.Create(() =>
@@ -118,15 +120,18 @@ public class MainWindowVM : ReactiveObject
 	private ReactiveCommand<Unit, Unit>? _addNewLinkOverlayCommand;
 	public ReactiveCommand<Unit, Unit> AddNewLinkOverlayCommand => _addNewLinkOverlayCommand ??= ReactiveCommand.Create(() =>
 	{
-		using var appDbContext = new AppDbContext();
+		if (SelectedObjectToLink == null) return;
+		using var dbContext = new AppDbContext();
 		DataObject selectedObject = SelectedNode!.Source;
 		var newLink = new DataLink {LinkName = "Новая связь", Parent = selectedObject, Child = SelectedObjectToLink};
-		appDbContext.Links.Add(newLink);
-		appDbContext.SaveChanges();
+		dbContext.Attach(selectedObject);
+		dbContext.Attach(SelectedObjectToLink);
+		dbContext.Add(newLink);
+		dbContext.SaveChanges();
 		
 		SelectedNode!.SubNodes.Add(TreeNodeVM.FromDataObject(SelectedObjectToLink, newLink));
 		AddLinkOverlayShouldBeVisible = false;
-	});
+	}, this.WhenAnyValue(vm => vm.SelectedObjectToLink).Select(selectedObjectToLink => selectedObjectToLink != null));
 	
 	private ReactiveCommand<Unit, Unit>? _cancelAddingNewLinkCommand;
 	public ReactiveCommand<Unit, Unit> CancelAddingNewLinkCommand => _cancelAddingNewLinkCommand ??= ReactiveCommand.Create(() =>
@@ -156,21 +161,21 @@ public class MainWindowVM : ReactiveObject
 			dbContext.Links.Remove(nodeToDelete.Link!);
 		}
 		dbContext.SaveChanges();
-	});
+	}, this.WhenAnyValue(vm => vm.SelectedNode).Select(selectedNode => selectedNode != null));
 	
 	private ReactiveCommand<Unit, Unit>? _exportDbToXMLFileCommand;
 	public ReactiveCommand<Unit, Unit> ExportDbToXMLFileCommand => _exportDbToXMLFileCommand ??= ReactiveCommand.Create(() =>
 	{
-		using var dbContext = new AppDbContext();
-		
 		var dialog = new SaveFileDialog();
 		dialog.RestoreDirectory = true ;
-		if (dialog.ShowDialog() == DialogResult.OK)
-		{
-			using Stream stream = dialog.OpenFile();
-			using var streamWriter = new StreamWriter(stream);
-			
-		}
+		if (dialog.ShowDialog() != DialogResult.OK) return;
+		using var dbContext = new AppDbContext();
+		using Stream stream = dialog.OpenFile();
+		using var streamWriter = new StreamWriter(stream);
+		var xmlSerializer = new XmlSerializer(typeof(DbDump), new[] {typeof(DataObject), typeof(DataLink), typeof(DataAttribute)});
+		using var xmlWriter = XmlWriter.Create(streamWriter, new XmlWriterSettings { Indent = true });
+		DbDump dump = dbContext.CreateDump();
+		xmlSerializer.Serialize(xmlWriter, dump);
 	});
 
 	#endregion
@@ -219,7 +224,7 @@ public class MainWindowVM : ReactiveObject
 		dbContext.Attributes.Remove(SelectedAttribute.Source);
 		dbContext.SaveChanges();
 		CurrentAttributes!.Remove(SelectedAttribute);
-	});
+	}, this.WhenAnyValue(vm => vm.SelectedNode, vm => vm.SelectedAttribute).Select((selectedNode) => selectedNode.Item1 != null && selectedNode.Item2 != null));
 
 	private ReactiveCommand<Unit, Unit>? _updateAttributesCollectionCommand;
 	public ReactiveCommand<Unit, Unit> UpdateAttributesCollectionCommand => _updateAttributesCollectionCommand ??= ReactiveCommand.Create(() =>
@@ -233,8 +238,8 @@ public class MainWindowVM : ReactiveObject
 	public MainWindowVM()
 	{
 		using var dbContext = new AppDbContext();
-		dbContext.RemoveRange(dbContext.Links.Where(link => link.Child == null || link.Parent == null));
-		Nodes = new ObservableCollection<TreeNodeVM>(dbContext.Objects.Include(obj => obj.LinksAsParent).Include(obj => obj.Attributes).Select(obj => TreeNodeVM.FromDataObject(obj, null)));
+		var objects = dbContext.Objects.Include(obj => obj.LinksAsParent).Include(obj => obj.LinksAsChild).Include(obj => obj.Attributes).ToList(); // if don't convert ToList() cause issue when object link child is null
+		Nodes = new ObservableCollection<TreeNodeVM>(objects.Select(obj => TreeNodeVM.FromDataObject(obj, null)));
 		Nodes.CollectionChanged += NodesOnCollectionChanged;
 		
 		_anyNodeSelected = this.WhenAnyValue(vm => vm.SelectedNode).Select(node => node != null)

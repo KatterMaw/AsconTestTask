@@ -2,9 +2,13 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using AsconTestTask.Backend.Data.Members;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
+using DataObject = AsconTestTask.Backend.Data.Members.DataObject;
 
 namespace AsconTestTask.UI.WPF.ViewModels;
 
@@ -32,19 +36,39 @@ public class TreeNodeVM : ReactiveObject
 		SubNodes = new ObservableCollection<TreeNodeVM>(subNodes);
 		foreach (TreeNodeVM treeNode in SubNodes) treeNode.ParentNode = this;
 		SubNodes.CollectionChanged += SubNodesOnCollectionChanged;
+		this.WhenAnyValue(vm => vm.IsRoot, vm => vm.ProductType)
+			.Select(x => x.Item1 && !string.IsNullOrWhiteSpace(x.Item2) ? Visibility.Visible : Visibility.Collapsed)
+			.ToPropertyEx(this, vm => vm.TypeVisibility);
 	}
 
 	public string? LinkName => Link?.LinkName;
 	public bool LinkIsVisible => Link != null;
 	public string ProductName => Source.Product;
+	public string ProductType => Source.Type;
 	public DataObject Source { get; }
 	public ObservableCollection<TreeNodeVM> SubNodes { get; }
-	public TreeNodeVM? ParentNode { get; private set; }
+	private TreeNodeVM? _parentNode;
+
+	public TreeNodeVM? ParentNode
+	{
+		get => _parentNode;
+		private set
+		{
+			_parentNode = value;
+			this.RaisePropertyChanged();
+			this.RaisePropertyChanged(nameof(IsRoot));
+		}
+	}
+
 	public DataLink? Link { get; }
+	public bool IsRoot => ParentNode == null;
+
+	[ObservableAsProperty] public Visibility TypeVisibility { get; }
 
 	public void NotifyPropertyChanged()
 	{
 		this.RaisePropertyChanged(nameof(ProductName));
+		this.RaisePropertyChanged(nameof(ProductType));
 		this.RaisePropertyChanged(nameof(LinkName));
 		this.RaisePropertyChanged(nameof(LinkIsVisible));
 	}

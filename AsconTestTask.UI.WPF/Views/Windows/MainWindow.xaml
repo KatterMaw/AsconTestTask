@@ -31,7 +31,7 @@
                     <Button Content="Новый объект" Margin="10" Width="130" Command="{Binding AddNewObjectCommand}"/>
                     <Button Content="Добавить связь" Margin="10" Width="130" Padding="0" Command="{Binding ShowAddNewLinkOverlayCommand}"/>
                     <Button Content="Удалить" Margin="10" Width="100" Command="{Binding DeleteSelectedObjectCommand}"/>
-                    <Button Content="Экспорт" Margin="10" Width="100"/>
+                    <Button Content="Экспорт" Margin="10" Width="100" Command="{Binding ExportDbToXMLFileCommand}"/>
                 </StackPanel>
                 
                 <TreeView Grid.Row="1" Margin="10" ItemsSource="{Binding Nodes, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding HasUnsavedChanges, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource InvertBooleanConverter}}">
@@ -41,6 +41,7 @@
                     <TreeView.ItemTemplate>
                         <HierarchicalDataTemplate ItemsSource="{Binding SubNodes}">
                             <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{Binding ProductType, UpdateSourceTrigger=PropertyChanged}" FontWeight="Light" Visibility="{Binding TypeVisibility, UpdateSourceTrigger=PropertyChanged}"/>
                                 <TextBlock Text="{Binding LinkName, UpdateSourceTrigger=PropertyChanged}" FontWeight="Light" Visibility="{Binding LinkIsVisible, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                 <TextBlock Text="{Binding ProductName, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
@@ -72,14 +73,14 @@
                                 <GridViewColumn Header="Название">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBox Text="{Binding AttributeName, UpdateSourceTrigger=PropertyChanged}" MinWidth="100"/>
+                                            <TextBox Text="{Binding AttributeName, UpdateSourceTrigger=PropertyChanged}" MinWidth="100" utilities:SelectAllTextOnDoubleClick.Active="True"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
                                 <GridViewColumn Header="Значение">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBox Text="{Binding AttributeValue, UpdateSourceTrigger=PropertyChanged}" MinWidth="100"/>
+                                            <TextBox Text="{Binding AttributeValue, UpdateSourceTrigger=PropertyChanged}" MinWidth="100" utilities:SelectAllTextOnDoubleClick.Active="True"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -96,13 +97,13 @@
                     </Grid.ColumnDefinitions>
                     <GroupBox Grid.Column="0" Grid.Row="0" Header="Объект" BorderThickness="0.5">
                         <StackPanel>
-                            <TextBox materialDesign:HintAssist.Hint="Тип" materialDesign:HintAssist.IsFloating="True" Style="{StaticResource MaterialDesignOutlinedTextBox}" Padding="7" materialDesign:HintAssist.Background="White" Cursor="IBeam" IsEnabled="{Binding AnyNodeSelected, UpdateSourceTrigger=PropertyChanged}" Text="{Binding ObjectType, UpdateSourceTrigger=PropertyChanged}"/>
-                            <TextBox materialDesign:HintAssist.Hint="Продукт" materialDesign:HintAssist.IsFloating="True" Style="{StaticResource MaterialDesignOutlinedTextBox}" Margin="0 10 0 0" Padding="7" materialDesign:HintAssist.Background="White" Cursor="IBeam" IsEnabled="{Binding AnyNodeSelected, UpdateSourceTrigger=PropertyChanged}" Text="{Binding ObjectProduct, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBox materialDesign:HintAssist.Hint="Тип" materialDesign:HintAssist.IsFloating="True" Style="{StaticResource MaterialDesignOutlinedTextBox}" Padding="7" materialDesign:HintAssist.Background="White" Cursor="IBeam" IsEnabled="{Binding AnyNodeSelected, UpdateSourceTrigger=PropertyChanged}" Text="{Binding ObjectType, UpdateSourceTrigger=PropertyChanged}" utilities:SelectAllTextOnDoubleClick.Active="True"/>
+                            <TextBox materialDesign:HintAssist.Hint="Продукт" materialDesign:HintAssist.IsFloating="True" Style="{StaticResource MaterialDesignOutlinedTextBox}" Margin="0 10 0 0" Padding="7" materialDesign:HintAssist.Background="White" Cursor="IBeam" IsEnabled="{Binding AnyNodeSelected, UpdateSourceTrigger=PropertyChanged}" Text="{Binding ObjectProduct, UpdateSourceTrigger=PropertyChanged}" utilities:SelectAllTextOnDoubleClick.Active="True"/>
                         </StackPanel>
                     </GroupBox>
                     <GroupBox Grid.Column="1" Grid.Row="0" Header="Связь с родителем" BorderThickness="0.5">
                         <StackPanel>
-                            <TextBox materialDesign:HintAssist.Hint="Название" materialDesign:HintAssist.IsFloating="True" Style="{StaticResource MaterialDesignOutlinedTextBox}" Padding="7" materialDesign:HintAssist.Background="White" Cursor="IBeam" IsEnabled="{Binding SelectedObjectHasLink, UpdateSourceTrigger=PropertyChanged}" Text="{Binding LinkName, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBox materialDesign:HintAssist.Hint="Название" materialDesign:HintAssist.IsFloating="True" Style="{StaticResource MaterialDesignOutlinedTextBox}" Padding="7" materialDesign:HintAssist.Background="White" Cursor="IBeam" IsEnabled="{Binding SelectedObjectHasLink, UpdateSourceTrigger=PropertyChanged}" Text="{Binding LinkName, UpdateSourceTrigger=PropertyChanged}" utilities:SelectAllTextOnDoubleClick.Active="True"/>
                         </StackPanel>
                     </GroupBox>
                 </Grid>
