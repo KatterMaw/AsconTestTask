@@ -18,6 +18,6 @@ public class DataAttributeConfiguration : IEntityTypeConfiguration<DataAttribute
 {
 	public void Configure(EntityTypeBuilder<DataAttribute> dataAttribute)
 	{
-		dataAttribute.HasOne(attribute => attribute.Object).WithMany().HasForeignKey(attribute => attribute.ObjectId).OnDelete(DeleteBehavior.Cascade);
+		dataAttribute.HasOne(attribute => attribute.Object).WithMany(obj => obj.Attributes).HasForeignKey(attribute => attribute.ObjectId).OnDelete(DeleteBehavior.Cascade);
 	}
 }
