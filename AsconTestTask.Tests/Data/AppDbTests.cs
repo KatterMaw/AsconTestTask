@@ -168,4 +168,27 @@ public class AppDbTests
 		// clean-up
 		dbContext.Database.EnsureDeleted();
 	}
+
+	[Fact]
+	public void CreatedAttributeWillAppearTroughObject()
+	{
+		// assign
+		var firstObject = new DataObject();
+		var attribute = new DataAttribute {Object = firstObject};
+		using var dbContext = new AppDbContext(ConnectionString);
+		dbContext.Database.EnsureDeleted();
+		dbContext.Database.EnsureCreated();
+		dbContext.Add(firstObject);
+		dbContext.SaveChanges();
+
+		// act
+		dbContext.Add(attribute);
+		dbContext.SaveChanges();
+		
+		// assert
+		Assert.Contains(attribute, firstObject.Attributes);
+
+		// clean-up
+		dbContext.Database.EnsureDeleted();
+	}
 }
