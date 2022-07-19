@@ -203,7 +203,7 @@ public class MainWindowVM : ReactiveObject
 		using var dbContext = new AppDbContext();
 		if (SelectedNode == null) return;
 		dbContext.Attach(SelectedNode.Source);
-		var newAttribute = new DataAttribute {Name = "Новый аттрибут",Value = string.Empty, Obj = SelectedNode.Source};
+		var newAttribute = new DataAttribute {Name = "Новый аттрибут",Value = string.Empty, Object = SelectedNode.Source};
 		SelectedNode.Source.Attributes.Add(newAttribute);
 		dbContext.SaveChanges();
 		CurrentAttributes!.Add(new AttributeVM(newAttribute));

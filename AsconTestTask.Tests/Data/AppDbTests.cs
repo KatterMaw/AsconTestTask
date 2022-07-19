@@ -146,7 +146,7 @@ public class AppDbTests
 		var firstObject = new DataObject();
 		var secondObject = new DataObject();
 		var link = new DataLink {Parent = firstObject, Child = secondObject};
-		var attribute = new DataAttribute {Obj = firstObject};
+		var attribute = new DataAttribute {Object = firstObject};
 		using var dbContext = new AppDbContext(ConnectionString);
 		dbContext.Database.EnsureDeleted();
 		dbContext.Database.EnsureCreated();

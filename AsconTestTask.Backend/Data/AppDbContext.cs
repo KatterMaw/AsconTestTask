@@ -35,6 +35,7 @@ public sealed class AppDbContext : DbContext
 	{
 		modelBuilder.ApplyConfiguration(new DataObjectConfiguration());
 		modelBuilder.ApplyConfiguration(new DataLinkConfiguration());
+		modelBuilder.ApplyConfiguration(new DataAttributeConfiguration());
 	}
 
 	private string GetConnectionStringFromConfig()
