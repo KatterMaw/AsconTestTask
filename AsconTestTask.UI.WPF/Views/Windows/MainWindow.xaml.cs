@@ -1,12 +1,9 @@
-﻿using System.Windows;
+﻿namespace AsconTestTask.UI.WPF.Views.Windows;
 
-namespace AsconTestTask.UI.WPF.Views.Windows
+public partial class MainWindow
 {
-	public partial class MainWindow
+	public MainWindow()
 	{
-		public MainWindow()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
 	}
 }

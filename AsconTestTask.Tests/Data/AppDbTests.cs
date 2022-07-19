@@ -10,7 +10,7 @@ public class AppDbTests
 	private const string connectionString = "Server=(localdb)\\mssqllocaldb;Database=testDb;Trusted_Connection=True;";
 	
 	[Fact]
-	public void LinkAddedToDbWillAppearInObjects()
+	public void LinkAddedToDbWillAppearTroughObjects()
 	{
 		// assign
 		var firstObject = new DataObject();

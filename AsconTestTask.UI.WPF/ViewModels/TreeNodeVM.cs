@@ -61,10 +61,7 @@ public class TreeNodeVM : ReactiveObject
 		}
 		else if (e.Action == NotifyCollectionChangedAction.Reset)
 		{
-			foreach (TreeNodeVM node in SubNodes)
-			{
-				node.ParentNode = this;
-			}
+			foreach (TreeNodeVM node in SubNodes) node.ParentNode = this;
 		}
 		
 		this.RaisePropertyChanged(nameof(SubNodes));
