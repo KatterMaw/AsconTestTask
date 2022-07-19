@@ -1,16 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Xml.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AsconTestTask.Backend.Data.Members;
 
+[Serializable]
 public class DataLink
 {
 	[Column("idparent")] public int ParentId { get; set; }
-	public DataObject Parent { get; set; }
+	[XmlIgnore] public DataObject Parent { get; set; }
 	[Column("idchild")] public int ChildId { get; set; }
-	public DataObject Child { get; set; }
+	[XmlIgnore] public DataObject Child { get; set; }
 	[Column("linkname")] public string LinkName { get; set; } = string.Empty;
 }
 

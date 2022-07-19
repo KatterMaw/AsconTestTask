@@ -2,6 +2,7 @@
 
 namespace AsconTestTask.Backend.Data;
 
+[Serializable]
 public class DbDump
 {
 	public DbDump(List<DataObject> objects, List<DataLink> links, List<DataAttribute> attributes)
