@@ -10,6 +10,8 @@ public class DbDump
 		Links = links;
 		Attributes = attributes;
 	}
+	
+	public DbDump() { } // required by serializer
 
 	public List<DataObject> Objects { get; }
 	public List<DataLink> Links { get; }
