@@ -7,7 +7,7 @@ namespace AsconTestTask.Tests.Data;
 
 public class AppDbTests
 {
-	private const string connectionString = "Server=(localdb)\\mssqllocaldb;Database=testDb;Trusted_Connection=True;";
+	private const string ConnectionString = "Server=(localdb)\\mssqllocaldb;Database=testDb;Trusted_Connection=True;";
 	
 	[Fact]
 	public void LinkAddedToDbWillAppearTroughObjects()
@@ -16,7 +16,7 @@ public class AppDbTests
 		var firstObject = new DataObject();
 		var secondObject = new DataObject();
 		var link = new DataLink {Parent = firstObject, Child = secondObject};
-		using var dbContext = new AppDbContext();
+		using var dbContext = new AppDbContext(ConnectionString);
 		dbContext.Database.EnsureDeleted();
 		dbContext.Database.EnsureCreated();
 
@@ -41,7 +41,7 @@ public class AppDbTests
 		var firstObject = new DataObject();
 		var secondObject = new DataObject();
 		var link = new DataLink {Parent = firstObject, Child = secondObject};
-		using var dbContext = new AppDbContext();
+		using var dbContext = new AppDbContext(ConnectionString);
 		dbContext.Database.EnsureDeleted();
 		dbContext.Database.EnsureCreated();
 		dbContext.Add(firstObject);
@@ -67,7 +67,7 @@ public class AppDbTests
 		var firstObject = new DataObject();
 		var secondObject = new DataObject();
 		var link = new DataLink {Parent = firstObject, Child = secondObject};
-		using var dbContext = new AppDbContext();
+		using var dbContext = new AppDbContext(ConnectionString);
 		dbContext.Database.EnsureDeleted();
 		dbContext.Database.EnsureCreated();
 		dbContext.Add(firstObject);
@@ -94,7 +94,7 @@ public class AppDbTests
 		var firstObject = new DataObject();
 		var secondObject = new DataObject();
 		var link = new DataLink {Parent = firstObject, Child = secondObject};
-		using var dbContext = new AppDbContext();
+		using var dbContext = new AppDbContext(ConnectionString);
 		dbContext.Database.EnsureDeleted();
 		dbContext.Database.EnsureCreated();
 		dbContext.Add(firstObject);
@@ -120,7 +120,7 @@ public class AppDbTests
 		var firstObject = new DataObject();
 		var secondObject = new DataObject();
 		var link = new DataLink {Parent = firstObject, Child = secondObject};
-		using var dbContext = new AppDbContext();
+		using var dbContext = new AppDbContext(ConnectionString);
 		dbContext.Database.EnsureDeleted();
 		dbContext.Database.EnsureCreated();
 		dbContext.Add(firstObject);
@@ -134,6 +134,36 @@ public class AppDbTests
 		
 		// assert
 		Assert.DoesNotContain(link, dbContext.Links);
+
+		// clean-up
+		dbContext.Database.EnsureDeleted();
+	}
+
+	[Fact]
+	public void CreateDumpMethodResultContainExpectedEntities()
+	{
+		// assign
+		var firstObject = new DataObject();
+		var secondObject = new DataObject();
+		var link = new DataLink {Parent = firstObject, Child = secondObject};
+		var attribute = new DataAttribute {Obj = firstObject};
+		using var dbContext = new AppDbContext(ConnectionString);
+		dbContext.Database.EnsureDeleted();
+		dbContext.Database.EnsureCreated();
+		dbContext.Add(firstObject);
+		dbContext.Add(secondObject);
+		dbContext.Add(link);
+		dbContext.Add(attribute);
+		dbContext.SaveChanges();
+
+		// act
+		DbDump dump = dbContext.CreateDump();
+		
+		// assert
+		Assert.Contains(firstObject, dump.Objects);
+		Assert.Contains(secondObject, dump.Objects);
+		Assert.Contains(link, dump.Links);
+		Assert.Contains(attribute, dump.Attributes);
 
 		// clean-up
 		dbContext.Database.EnsureDeleted();

@@ -18,7 +18,10 @@ public sealed class AppDbContext : DbContext
 	{
 		_connectionString = connectionString ?? GetConnectionStringFromConfig();
 	}
-	
+
+	public DbDump CreateDump() => new(Objects.ToList(), Links.ToList(), Attributes.ToList());
+	public async Task<DbDump> CreateDumpAsync() => await Task.Run(CreateDump);
+
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 	{
 		optionsBuilder.EnableSensitiveDataLogging();
